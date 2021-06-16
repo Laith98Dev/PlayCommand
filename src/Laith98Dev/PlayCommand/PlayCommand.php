@@ -102,8 +102,6 @@ class PlayCommand extends PluginCommand
 					$sender->sendMessage(TF::RED . "please type game name!");
 					return false;
 				}
-				
-				return false;
 			}
 			
 			if(strtolower($game) == "set"){
@@ -125,8 +123,6 @@ class PlayCommand extends PluginCommand
 						return false;
 					}
 				}
-				
-				return false;
 			}
 			
 			if(strtolower($game) == "remove"){
@@ -147,8 +143,6 @@ class PlayCommand extends PluginCommand
 					return false;
 				}
 			}
-			
-			return false;
 		}
 		
 		if(strtolower($game) == "list"){

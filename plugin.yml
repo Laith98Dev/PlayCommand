@@ -1,10 +1,9 @@
 name: PlayCommand
-api: [3.0.0]
+api: [4.0.0]
 version: 1.0.0
 main: Laith98Dev\PlayCommand\Main
 author: Laith98Dev
 
 permissions:
   play.cmd.admin:
-    description: "Allow Player use all subcommands"
     default: op

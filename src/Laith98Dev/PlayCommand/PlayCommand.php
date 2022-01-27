@@ -36,19 +36,22 @@ namespace Laith98Dev\PlayCommand;
 use pocketmine\command\CommandSender;
 use pocketmine\command\PluginCommand;
 use pocketmine\utils\TextFormat as TF;
-use pocketmine\Player;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginOwned;
+use pocketmine\plugin\Plugin;
 
 use Laith98Dev\PlayCommand\Main;
 
-class PlayCommand extends PluginCommand
+class PlayCommand extends Command implements PluginOwned
 {
-	/** @var Main */
-	private $plugin;
+    private Main $plugin;
 	
-	public function __construct(Main $plugin){
-		parent::__construct("play", $plugin);
+	public function init(BuycraftPlugin $plugin) : void{
 		$this->plugin = $plugin;
-		$this->setDescription("Play Command");
+	}
+	
+	public function getOwningPlugin() : Plugin{
+		return $this->plugin;
 	}
 	
 	public function execute(CommandSender $sender, string $commandLabel, array $args): bool{
@@ -56,6 +59,9 @@ class PlayCommand extends PluginCommand
 			$sender->sendMessage("run the command in-game only!");
 			return false;
 		}
+		
+		if(!$this->testPermission($sender))
+			return false;
 		
 		if(!isset($args[0])){
 			$sender->sendMessage(TF::RED . "Usage: /" . $commandLabel . " <GameName>");

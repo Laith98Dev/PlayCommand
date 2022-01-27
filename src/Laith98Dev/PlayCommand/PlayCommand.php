@@ -70,7 +70,7 @@ class PlayCommand extends Command implements PluginOwned
 		}
 		
 		$game = $args[0];
-		$other = isset($args[1]) ?? "";
+		$other = isset($args[1]) ? $args[1] : "";
 		$gamesList = $this->plugin->getGamesList();
 		
 		if(in_array($game, ["add", "set", "remove"])){

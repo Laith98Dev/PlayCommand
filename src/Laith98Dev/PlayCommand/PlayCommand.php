@@ -46,7 +46,7 @@ class PlayCommand extends Command implements PluginOwned
 {
     private Main $plugin;
 	
-	public function init(BuycraftPlugin $plugin) : void{
+	public function init(Main $plugin) : void{
 		$this->plugin = $plugin;
 	}
 	

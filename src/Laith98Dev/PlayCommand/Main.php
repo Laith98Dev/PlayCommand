@@ -38,11 +38,15 @@ use pocketmine\utils\Config;
 
 class Main extends PluginBase {
 	
-	public function onEnable(){
+	public function onEnable(): void{
 		@mkdir($this->getDataFolder());
 		
 		$map = $this->getServer()->getCommandMap();
-		$map->register("play", new PlayCommand($this));
+		
+		$cmd = new PlayCommand("play", "Play Command", "play.cmd.admin", ["play"]);
+		$cmd->init($this);
+		
+		$map->register($this->getName(), $cmd);
 		
 		if(!is_file($this->getDataFolder() . "config.yml")){
 			(new Config($this->getDataFolder() . "config.yml", Config::YAML, ["games_list" => []]));
@@ -60,7 +64,11 @@ class Main extends PluginBase {
 		
 		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
 		
-		$command = str_replace("/", "", $command);
+		if($command[0] == "/"){
+			$command = substr($command, -(strlen($command) - 1), strlen($command) - 1);// //join => /join | /join => join 
+		}
+		
+		// $command = str_replace("/", "", $command);
 		$index = [];
 		
 		$list = $cfg->get("games_list", []);
@@ -113,7 +121,10 @@ class Main extends PluginBase {
 		}
 		
 		if(isset($index[$name])){
-			$newCommand = str_replace("/", "", $newCommand);
+			if($newCommand[0] == "/"){
+				$newCommand = substr($newCommand, -(strlen($newCommand) - 1), strlen($newCommand) - 1);// //join => /join | /join => join 
+			}
+			// $newCommand = str_replace("/", "", $newCommand);
 			$index[$name] = $newCommand;
 			$cfg->set("games_list", $index);
 			$cfg->save();

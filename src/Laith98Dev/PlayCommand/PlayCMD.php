@@ -34,7 +34,7 @@ namespace Laith98Dev\PlayCommand;
  */
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\PluginCommand;
+// use pocketmine\command\PluginCommand;
 use pocketmine\command\Command;
 use pocketmine\utils\TextFormat as TF;
 use pocketmine\player\Player;
@@ -43,7 +43,7 @@ use pocketmine\plugin\Plugin;
 
 use Laith98Dev\PlayCommand\Main;
 
-class IPlayCommand extends Command implements PluginOwned
+class PlayCMD extends Command implements PluginOwned
 {
     private Main $plugin;
 	

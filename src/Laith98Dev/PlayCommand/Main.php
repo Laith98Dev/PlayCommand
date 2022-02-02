@@ -43,7 +43,7 @@ use pocketmine\plugin\Plugin;
 
 use Laith98Dev\PlayCommand\Main;
 
-class IPlayCommand extends Command implements PluginOwned
+class PlayCMD extends Command implements PluginOwned
 {
     private Main $plugin;
 	

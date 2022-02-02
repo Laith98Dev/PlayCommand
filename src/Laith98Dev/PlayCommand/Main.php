@@ -33,105 +33,157 @@ namespace Laith98Dev\PlayCommand;
  * 	
  */
 
-use pocketmine\plugin\PluginBase;
-use pocketmine\utils\Config;
+use pocketmine\command\CommandSender;
+use pocketmine\command\PluginCommand;
+use pocketmine\command\Command;
+use pocketmine\utils\TextFormat as TF;
+use pocketmine\player\Player;
+use pocketmine\plugin\PluginOwned;
+use pocketmine\plugin\Plugin;
 
-class Main extends PluginBase {
+use Laith98Dev\PlayCommand\Main;
+
+class PlayCommand extends Command implements PluginOwned
+{
+    private Main $plugin;
 	
-	public function onEnable(): void{
-		@mkdir($this->getDataFolder());
-		
-		$map = $this->getServer()->getCommandMap();
-		
-		$cmd = new PlayCommand("play", "Play Command", "play.cmd.admin", ["play"]);
-		$cmd->init($this);
-		
-		$map->register($this->getName(), $cmd);
-		
-		if(!is_file($this->getDataFolder() . "config.yml")){
-			(new Config($this->getDataFolder() . "config.yml", Config::YAML, ["games_list" => []]));
-		}
+	public function init(Main $plugin) : void{
+		$this->plugin = $plugin;
 	}
 	
-	public function getGamesList(){
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-		return $cfg->get("games_list", []);
+	public function getOwningPlugin() : Plugin{
+		return $this->plugin;
 	}
 	
-	public function addGame(string $name, string $command): bool{
-		if(!is_file($this->getDataFolder() . "config.yml"))
+	public function execute(CommandSender $sender, string $commandLabel, array $args): bool{
+		if(!$sender instanceof Player){
+			$sender->sendMessage("run the command in-game only!");
 			return false;
-		
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-		
-		if($command[0] == "/"){
-			$command = substr($command, -(strlen($command) - 1), strlen($command) - 1);// //join => /join | /join => join 
 		}
 		
-		// $command = str_replace("/", "", $command);
-		$index = [];
+		// if(!$this->testPermission($sender))
+			// return false;
 		
-		$list = $cfg->get("games_list", []);
-		
-		foreach ($list as $game => $cmd){
-			$index[$game] = $cmd;
-		}
-		
-		$index_ = array_change_key_case($index, CASE_LOWER);
-		if(isset($index[$name]) || isset($index_[strtolower($name)]))
+		if(!isset($args[0])){
+			$sender->sendMessage(TF::RED . "Usage: /" . $commandLabel . " <GameName>");
 			return false;
-		
-		$index[$name] = $command;
-		
-		$cfg->set("games_list", $index);
-		$cfg->save();
-		return true;
-	}
-	
-	public function removeGame(string $name): bool{
-		if(!is_file($this->getDataFolder() . "config.yml"))
-			return false;
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-		$list = $cfg->get("games_list", []);
-		
-		$index = [];
-		foreach ($list as $game => $cmd){
-			$index[$game] = $cmd;
 		}
 		
-		if(isset($index[$name])){
-			unset($index[$name]);
-			$cfg->set("games_list", $index);
-			$cfg->save();
-			return true;
-		}
+		$game = $args[0];
+		$other = isset($args[1]) ? $args[1] : "";
+		$gamesList = $this->plugin->getGamesList();
 		
-		return false;
-	}
-	
-	public function editGame(string $name, string $newCommand): bool{
-		if(!is_file($this->getDataFolder() . "config.yml"))
-			return false;
-		$cfg = new Config($this->getDataFolder() . "config.yml", Config::YAML);
-		
-		$list = $cfg->get("games_list", []);
-		
-		$index = [];
-		foreach ($list as $game => $cmd){
-			$index[$game] = $cmd;
-		}
-		
-		if(isset($index[$name])){
-			if($newCommand[0] == "/"){
-				$newCommand = substr($newCommand, -(strlen($newCommand) - 1), strlen($newCommand) - 1);// //join => /join | /join => join 
+		if(in_array($game, ["add", "set", "remove"])){
+			
+			if(!$sender->hasPermission("play.cmd.admin")){
+				$sender->sendMessage(TF::RED . "You don't have permission to use this subcommand!");
+				return false;
 			}
-			// $newCommand = str_replace("/", "", $newCommand);
-			$index[$name] = $newCommand;
-			$cfg->set("games_list", $index);
-			$cfg->save();
+			
+			if(strtolower($game) == "add"){
+				if(isset($args[1])){
+					$name = $args[1];
+					if(in_array($name, ["add", "set", "remove", "list"])){
+						$sender->sendMessage(TF::RED . "you cannot use this names <add|set|remove|list>");
+						return false;
+					}
+					if(isset($args[2])){
+						$cmd = $args[2];
+						for ($i = 3; $i <= count($args); $i++){
+							if(isset($args[$i])){
+								$cmd .= " " . $args[$i];
+							}
+						}
+						if($this->plugin->addGame($name, $cmd)){
+							$sender->sendMessage(TF::YELLOW . "the game with name '" . $name . "' has been added!");
+							return true;
+						} else {
+							$sender->sendMessage(TF::RED . "the game with name '" . $name . "' already exist!");
+							return false;
+						}
+					} else {
+						$sender->sendMessage(TF::RED . "please type game command!");
+						return false;
+					}
+				} else {
+					$sender->sendMessage(TF::RED . "please type game name!");
+					return false;
+				}
+			}
+			
+			if(strtolower($game) == "set"){
+				if(isset($args[1])){
+					$name = $args[1];
+					if(!isset($gamesList[$name])){
+						$sender->sendMessage(TF::RED . "the game with name '" . $name . "' not exist!");
+						return false;
+					}
+					
+					if(isset($args[2])){
+						$cmd = $args[2];
+						if($this->plugin->editGame($name, $cmd)){
+							$sender->sendMessage(TF::YELLOW . "Changes saved!");
+							return true;
+						}
+					} else {
+						$sender->sendMessage(TF::RED . "please type new command!");
+						return false;
+					}
+				}
+			}
+			
+			if(strtolower($game) == "remove"){
+				if(isset($args[1])){
+					$name = $args[1];
+					if(!isset($gamesList[$name])){
+						$sender->sendMessage(TF::RED . "the game with name '" . $name . "' not exist!");
+						return false;
+					}
+					
+					if($this->plugin->removeGame($name)){
+						$sender->sendMessage(TF::RED . "the game with name '" . $name . "' has been removed!");
+						return true;
+					}
+					
+				} else {
+					$sender->sendMessage(TF::RED . "please type game name!");
+					return false;
+				}
+			}
+		}
+		
+		if(strtolower($game) == "list"){
+			
+			$games = "Games list: ";
+			
+			foreach ($gamesList as $gameName => $cc){
+				$games .= "\n" . TF::GREEN . "- " . TF::YELLOW . $gameName;
+			}
+			
+			$sender->sendMessage($games);
+			
 			return true;
 		}
 		
-		return false;
+		$cmd = null;
+		
+		foreach($gamesList as $game_ => $cmd_){
+			if(strtolower($game_) == strtolower($game)){
+				$cmd = $cmd_;
+			}
+		}
+		
+		if($cmd == null){
+			if(!isset($gamesList[$game])){
+				$sender->sendMessage(TF::RED . "the game with name '" . $game . "' not exist!");
+				return false;
+			}
+			
+			$cmd = $gamesList[$game];
+		}
+		
+		
+		$this->plugin->getServer()->dispatchCommand($sender, $cmd . " " . $other);
+		return true;
 	}
 }

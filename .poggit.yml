@@ -5,4 +5,5 @@ branches:
 projects:
   PlayCommand:
     path: ""
+    icon: 20220202_070207.png
 ...

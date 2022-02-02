@@ -43,7 +43,7 @@ use pocketmine\plugin\Plugin;
 
 use Laith98Dev\PlayCommand\Main;
 
-class PlayCommand extends Command implements PluginOwned
+class IPlayCommand extends Command implements PluginOwned
 {
     private Main $plugin;
 	
@@ -61,8 +61,8 @@ class PlayCommand extends Command implements PluginOwned
 			return false;
 		}
 		
-		if(!$this->testPermission($sender))
-			return false;
+		// if(!$this->testPermission($sender))
+			// return false;
 		
 		if(!isset($args[0])){
 			$sender->sendMessage(TF::RED . "Usage: /" . $commandLabel . " <GameName>");
@@ -165,12 +165,23 @@ class PlayCommand extends Command implements PluginOwned
 			return true;
 		}
 		
-		if(!isset($gamesList[$game])){
-			$sender->sendMessage(TF::RED . "the game with name '" . $game . "' not exist!");
-			return false;
+		$cmd = null;
+		
+		foreach($gamesList as $game_ => $cmd_){
+			if(strtolower($game_) == strtolower($game)){
+				$cmd = $cmd_;
+			}
 		}
 		
-		$cmd = $gamesList[$game];
+		if($cmd == null){
+			if(!isset($gamesList[$game])){
+				$sender->sendMessage(TF::RED . "the game with name '" . $game . "' not exist!");
+				return false;
+			}
+			
+			$cmd = $gamesList[$game];
+		}
+		
 		
 		$this->plugin->getServer()->dispatchCommand($sender, $cmd . " " . $other);
 		return true;

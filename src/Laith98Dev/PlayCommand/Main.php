@@ -77,7 +77,8 @@ class Main extends PluginBase {
 			$index[$game] = $cmd;
 		}
 		
-		if(isset($index[$name]))
+		$index_ = array_change_key_case($index, CASE_LOWER);
+		if(isset($index[$name]) || isset($index_[strtolower($name)]))
 			return false;
 		
 		$index[$name] = $command;
